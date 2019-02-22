@@ -1,10 +1,12 @@
 
 library(ggplot2)
 library(ggmap)
+library(lubridate)
 getwd()
 setwd('/Users/AngelinaChen/Downloads')
-crime_data <- read.csv('Crime_data.csv')
-crime_data
+crime_data <- read.csv('Partial Categorized crime data.csv')
+crime_data$Date <- as.character(crime_data$Date)
+crime_data$Time <- as.character(crime_data$Time)
 attach(crime_data)
 geocoded <- data.frame(stringsAsFactors = FALSE)
 crime_data[,"longitude"] <- NA
@@ -27,16 +29,21 @@ university <- ggmap(twin_cities,legend = "topleft")
 university + stat_density_2d(aes(x=longitude,y=latitude,alpha = ..level..,colour=..level..),size = 2, bins = 4, data = crime_data,geom='polygon')
 
 browser()
+rdate <- c()
 
 #i <- 3518
 #result <- geocode(paste(crime_data$Address[i],'Minneapolis','st.paul'), output = "latlona", source = "google")
 #crime_data$longitude[i] <- as.numeric(result[1])
 #crime_data$latitude[i] <- as.numeric(result[2])
 #crime_data$geoAddress[i] <- as.character(result[3])
-write.csv(crime_data,file = 'Geocoded crime data.csv')
-crime_data[,'rdate'] <- ''
+write.csv(crime_data,file = 'Categorized crime data.csv')
+crime_data[,'rdate'] <- as.Date(crime_data$rdate)
 for(i in 1:4029){
-  rdate[i] <- as.Date(crime_data$Date[i],format = '%m/%d/%Y')
+  crime_data$datetime[i] <- paste(crime_data$Date[i],crime_data$Time[i])
+}
+crime_data$datetime <- gsub('/','-',crime_data$datetime)
+for(i in 1:4029){
+  rdate[i] = as.POSIXct(crime_data$datetime[i])
 }
 crime_data$rdate <- rdate
 crime_data <- read.csv('Geocoded crime data.csv')
@@ -72,5 +79,24 @@ for (i in 1:4029){
   }
   else{
     crime_data$Shift[i] <- 'night and day'
+  }
+}
+
+save(crime_data,file='crime_data.Rda')
+load('crime_data.Rda')
+
+crime_data[,"Region"] <- NA
+for (i in 1:4029){
+  if ((crime_data$longitude[i] >= -93.239658)&&(crime_data$longitude[i] <= -93.215104)&& (crime_data$latitude[i] <= 44.98869578246549) && (crime_data$latitude[i] >= 44.973032)){
+    crime_data$Region[i] <- 'East Bank North'
+  }
+  else if ((crime_data$longitude[i] >= -93.187361)&&(crime_data$longitude[i] <= -93.165570)&& (crime_data$latitude[i] >= 44.977890) && (crime_data$latitude[i] <= 44.998662)){
+    crime_data$Region[i] <- 'St.Paul'
+  }
+  else if ((crime_data$longitude[i] >= -93.248246)&&(crime_data$longitude[i] <= -93.215104)&& (crime_data$latitude[i] >= 44.966851) && (crime_data$latitude[i] <= 44.98869578246549)){
+    crime_data$Region[i] <- 'West Bank'
+  }
+  else{
+    crime_data$Region[i] <- 'other'
   }
 }
