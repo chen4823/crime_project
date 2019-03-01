@@ -93,8 +93,11 @@ for (i in 1:4029){
   else if ((crime_data$longitude[i] >= -93.187361)&&(crime_data$longitude[i] <= -93.165570)&& (crime_data$latitude[i] >= 44.977890) && (crime_data$latitude[i] <= 44.998662)){
     crime_data$Region[i] <- 'St.Paul'
   }
-  else if ((crime_data$longitude[i] >= -93.248246)&&(crime_data$longitude[i] <= -93.215104)&& (crime_data$latitude[i] >= 44.966851) && (crime_data$latitude[i] <= 44.98869578246549)){
+  else if ((crime_data$longitude[i] >= -93.248246)&&(crime_data$longitude[i] <= -93.236)&& (crime_data$latitude[i] >= 44.966851) && (crime_data$latitude[i] <= 44.98869578246549)){
     crime_data$Region[i] <- 'West Bank'
+  }
+  else if ((crime_data$longitude[i] >= -93.236)&&(crime_data$longitude[i] <= -93.215104)&& (crime_data$latitude[i] >= 44.966851) && (crime_data$latitude[i] <= 44.98869578246549)){
+    crime_data$Region[i] <- 'East Bank South'
   }
   else{
     crime_data$Region[i] <- 'other'
