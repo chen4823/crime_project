@@ -67,7 +67,6 @@ for (i in 2:length(state1)) {
 }
 
 ## convert to transition probabilities
-row.sums <- apply(P0, 1, sum)
 
 new_counter <- function() {  # closure to increment across function calls
   i <- 0
@@ -77,14 +76,16 @@ new_counter <- function() {  # closure to increment across function calls
   }
 }
 
+## pass in a matrix of counts. return a transition matrix.
 ## new counter must be called immediately before the
 ## transition matrix P is created, so put this inside
 ## a function to prevent bugs.
-together <- function() {
+together <- function(X) {
+    row.sums <- apply(X, 1, sum)
     increment <- new_counter()  # must be called before the next line
-    P <- t(apply(P0, 1, function(x) { x/row.sums[increment()]}))
+    P <- t(apply(X, 1, function(x) { x/row.sums[increment()]}))
     P  
 }
-P <- together()
+P_AAA <- together(P0)
 
-all(near(1, apply(P, 1, sum)))  # check that rows sum to one
+all(near(1, apply(P_AAA, 1, sum)))  # check that rows sum to one
