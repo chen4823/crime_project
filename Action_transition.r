@@ -1,9 +1,11 @@
 source("transition.R")
 
-### Natural transition counts
+### Natural transition counts correspond to action AAA
 P0
 
-### Actions: AAA, BA0, AB0, B0A, 0BA
+### we don't have data for the other possible actions BA0,
+### AB0, B0A, 0BA, so we rely on studies of police presence
+### effect on crime from the literature.
 
 ### BA0
 P1 = P0
