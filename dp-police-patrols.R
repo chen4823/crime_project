@@ -22,26 +22,28 @@ P <- array(data=c(as.vector(P_AAA),
                   dimnames=list(from=S, to=S, action=A))
 
 
-## immediate cost of being in state i is the average crime count (for now)
+## immediate cost of being in state s is the average crime count (for now)
 avg.crime.count <- function(st) {
     X <- subset(CC2, state==st)
     mean(X$WB) + mean(X$EB) + mean(X$SP)
 }
 
-g <- sapply(S, avg.crime.count)
+r <- sapply(S, avg.crime.count)
 
-alpha <- 0.9   # discount factor
+gamma <- 0.9   # discount factor
 
-## applies the DP iteration for state i
-FJ <- function(i) {
+## applies the DP iteration for state s. this is the update rule
+## shown in equation (4.10) in the RL book, except that the immediate
+## cost r is not taken in expectation.
+FV <- function(s) {
     cost <- rep(Inf, length(A)) # holds the cost for each control
     names(cost) <- A
     for (a in A) {
         cost.to.go <- 0   # holds expected cost-to-go for control a
-        for (j in S) {
-            cost.to.go <- cost.to.go + P[i,j,a]*J[j]
+        for (s.prime in S) {
+            cost.to.go <- cost.to.go + P[s,s.prime,a]*V[s.prime]
         }
-        cost[a] <- g[i] + alpha*cost.to.go
+        cost[a] <- r[s] + gamma*cost.to.go
     }
     cost.star <- min(cost)
     a.star <- which(near(cost.star, cost))[1]
@@ -49,26 +51,29 @@ FJ <- function(i) {
     list(cost.star, A[a.star])
 }
 
-## apply the value iteration algorithm.
-## note that this is the gauss-seidel version of value iteration
-## because we iterate one state at a time and use the interim results,
-## hence the notation FJ(i) as in bertsekas.
-eps <- .0001           # tolerance for convergence
-k <- 0                 # iteration number
-J <- rep(0, length(S)) # initially, start the value iteration with zero cost
-J.prev <- rep(eps + 1, length(S)) # to check convergence
-policy <- rep(NA, length(S))
+## apply the value iteration algorithm. note that this is the gauss-seidel
+## version of value iteration because we iterate one state at a time and
+## use the interim results.
 
-names(J) <- S
+## initialization
+theta <- .0001         # tolerance for convergence
+k <- 0                 # iteration number
+V <- rep(0, length(S)) # initially, start the value iteration with zero cost
+V.prev <- rep(theta + 1, length(S)) # to check convergence
+delta <- V.prev - V    # to check convergence
+policy <- rep("AAA", length(S))
+
+names(V) <- S
 names(policy) <- S
 
-while (!all(near(J - J.prev, 0, tol=eps))) {
+while (!all(near(delta, 0, tol=theta))) {
     k <- k + 1
-    J.prev <- J
-    for (i in S) {
-        lst <- FJ(i)
-        J[i] <- lst[[1]]
-        policy[i] <- lst[[2]]
+    V.prev <- V
+    for (s in S) {
+        lst <- FV(s)
+        V[s] <- lst[[1]]
+        policy[s] <- lst[[2]]
     }
-    message("iteration = ", k, " convergence = ", sum(J-J.prev))
+    delta <- V.prev - V
+    message("iteration = ", k, "policy = ", policy, " convergence = ", sum(delta))
 }
