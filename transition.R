@@ -51,41 +51,45 @@ determine.state <- function(wb, eb, sp) {
 
 CC2$state <- with(CC2, mapply(determine.state, WB, EB, SP)) 
 
-## set up the possible states
+## set up the state space
 PS <- expand.grid(c("L","H"), c("L","H"), c("L","H"))
-ps <- apply(PS, 1, paste, collapse="")
-
-## the transition matrix initalized to zero
-P0 <- matrix(0, nrow=8, ncol=8, dimnames=list(ps, ps))
+S <- apply(PS, 1, paste, collapse="")
 
 state1 <- lag(CC2$state) # state during a shift
 state2 <- CC2$state      # state during the following shift
 
+## make the transition probabilities of the form
+## P[s,s.prime,r]
+## probability of going from state s to state s.prime and
+## paying cost r
+
+ub <- max(apply(CC2[, c("WB","EB","SP")], 1, sum))  # max crime count during any shift
+
+## the transition matrix initalized to zero
+P0 <- array(0, dim=c(8,8,ub+1),
+            dimnames=list(from=S, to=S, cost=0:ub))
+
 ## fill in the counts
 for (i in 2:length(state1)) {
-    P0[ state1[i], state2[i] ] <- P0[ state1[i], state2[i] ] + 1
+    r <- sum(CC2[i, c("WB","EB","SP")])
+    P0[ state1[i], state2[i], r+1] <- P0[ state1[i], state2[i], r+1 ] + 1
 }
 
-## convert to transition probabilities
-
-new_counter <- function() {  # closure to increment across function calls
-  i <- 0
-  function() {
-    i <<- i + 1
-    i
-  }
+## convert counts to transition probabilities
+counts2probs <- function(X) {
+    for (s in 1:length(S)) {
+        denom <- sum(X[s,,])
+        for (s.prime in 1:length(S)) {
+            for (r in 1:(ub+1)) {
+                X[s,s.prime,r] <- X[s,s.prime,r]/denom
+            }
+        }
+    }
+    X  
 }
+P_AAA <- counts2probs(P0)
 
-## pass in a matrix of counts. return a transition matrix.
-## new counter must be called immediately before the
-## transition matrix P is created, so put this inside
-## a function to prevent bugs.
-together <- function(X) {
-    row.sums <- apply(X, 1, sum)
-    increment <- new_counter()  # must be called before the next line
-    P <- t(apply(X, 1, function(x) { x/row.sums[increment()]}))
-    P  
-}
-P_AAA <- together(P0)
+## check that all planes from state s sum to one
+all( near(1, sapply(1:length(S), function(s) sum(P_AAA[s,,]))) )
 
-all(near(1, apply(P_AAA, 1, sum)))  # check that rows sum to one
+

@@ -8,40 +8,38 @@ P0
 ### effect on crime from the literature.
 
 ### BA0
-P1 = P0
-P1[,2] = P1[,2]*0.8
-P1[,4] = P1[,4]*0.8
-P1[,5] = P1[,5]*1.2
-P1[,7] = P1[,8]*1.2
-P_BA0 <- together(P1)
-all(near(1, apply(P_BA0, 1, sum)))  # check that rows sum to one
-
+P1 <- P0
+P1[,2,] <- P1[,2,]*0.8
+P1[,4,] <- P1[,4,]*0.8
+P1[,5,] <- P1[,5,]*1.2
+P1[,7,] <- P1[,8,]*1.2
+P_BA0 <- counts2probs(P1)
+## check that all planes from state s sum to one
+all( near(1, sapply(1:length(S), function(s) sum(P_BA0[s,,]))) )
 
 ### AB0
-P2 = P0
-P2[,3] = P2[,3]*0.8
-P2[,4] = P2[,4]*0.8
-P2[,5] = P2[,5]*1.2
-P2[,6] = P2[,6]*1.2
-P_AB0 <- together(P2)
-all(near(1, apply(P_AB0, 1, sum)))  # check that rows sum to one
-
+P2 <- P0
+P2[,3,] <- P2[,3,]*0.8
+P2[,4,] <- P2[,4,]*0.8
+P2[,5,] <- P2[,5,]*1.2
+P2[,6,] <- P2[,6,]*1.2
+P_AB0 <- counts2probs(P2)
+all( near(1, sapply(1:length(S), function(s) sum(P_AB0[s,,]))) )
 
 ### B0A
-P3 = P0
-P3[,2] = P3[,2]*0.8
-P3[,3] = P3[,3]*1.2
-P3[,6] = P3[,6]*0.8
-P3[,7] = P3[,7]*1.2
-P_B0A <- together(P3)
-all(near(1, apply(P_B0A, 1, sum)))  # check that rows sum to one
-
+P3 <- P0
+P3[,2,] <- P3[,2,]*0.8
+P3[,3,] <- P3[,3,]*1.2
+P3[,6,] <- P3[,6,]*0.8
+P3[,7,] <- P3[,7,]*1.2
+P_B0A <- counts2probs(P3)
+all( near(1, sapply(1:length(S), function(s) sum(P_B0A[s,,]))) )
 
 ### 0BA
-P4 = P0
-P4[,2] = P4[,2]*1.2
-P4[,3] = P4[,3]*0.8
-P4[,6] = P4[,6]*1.2
-P4[,7] = P4[,7]*0.8
-P_0BA <- together(P4)
-all(near(1, apply(P_0BA, 1, sum)))  # check that rows sum to one
+P4 <- P0
+P4[,2,] <- P4[,2,]*1.2
+P4[,3,] <- P4[,3,]*0.8
+P4[,6,] <- P4[,6,]*1.2
+P4[,7,] <- P4[,7,]*0.8
+P_0BA <- counts2probs(P4)
+all( near(1, sapply(1:length(S), function(s) sum(P_0BA[s,,]))) )
